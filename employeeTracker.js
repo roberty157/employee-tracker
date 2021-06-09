@@ -209,5 +209,7 @@ connection.query(`SELECT id FROM department`, (err, res) => {
     if (err) throw err;
     // Log all results of the SELECT statement
     console.log(res);
+    const map1 = res.map(x => x.id);
+    console.log(map1);
     console.log('\n');
 });
