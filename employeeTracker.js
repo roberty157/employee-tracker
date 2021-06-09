@@ -19,13 +19,13 @@ const connection = mysql.createConnection({
     // Be sure to update with your own MySQL password!
     password: process.env.DB_password,
     database: process.env.DB_name,
-  });
+});
   
-  connection.connect((err) => {
+connection.connect((err) => {
     if (err) throw err;
     console.log(`connected as id ${connection.threadId}\n`);
     
-  });
+});
 
   //add departments, roles, employees
 
@@ -52,6 +52,7 @@ function addDepartment(){
             }
           );
           console.log(query.sql);
+          init();
     })
 }
 function addRole(){
@@ -87,6 +88,7 @@ function addRole(){
             }
           );
           console.log(query.sql);
+          init();
     })
 }
 function addEmployee(){
@@ -124,6 +126,7 @@ function addEmployee(){
             }
           );
           console.log(query.sql);
+          init();
     })
 }
 function viewTable(table){
@@ -173,10 +176,66 @@ function view(){
     })
 }
 
+function updateEmployee(roleList){
+    inquirer
+    .prompt([
+        {
+            type:'list',
+            message:"Which employee would you like to update",
+            choices: roleList,
+            name:'employee'
+        },
+        
+        {
+            type:'input',
+            message:"What is the new role id for this employee?",
+            name:'value'
+        },
+        
+    ])
+    .then((response)=>{
+        let employee_id = JSON.parse(response.employee).id;
+        
+        //let column = response.column;
+        const query = connection.query(
+            'UPDATE employee SET ? WHERE ?',
+            [
+              {
+                role_id: response.value,
+              },
+              {
+                id: employee_id,
+              },
+            ],
+            (err, res) => {
+              if (err) throw err;
+              console.log(`${res.affectedRows} products updated!\n`);
+             
+            }
+          );
+        
+          // logs the actual query being run
+          console.log(query.sql);
+          init();
+        
+        
+        })
+};
 function update(){
-    console.log(update);
+    let roleList;
+    connection.query('SELECT * FROM employee', (err, res) => {
+        if (err) throw err;
+        // Log all results of the SELECT statement
+        //console.log(res);
+        roleList = res.map(x => { return {id: x.id, first_name: x.first_name, last_name: x.last_name} });
+        roleList= roleList.map(x => JSON.stringify(x));
+        console.log('\n');
+        updateEmployee(roleList);
+        
+    });
     
 }
+
 
 function init(){
     inquirer
@@ -203,13 +262,15 @@ function init(){
     })
 }
 
-//init();
+init();
 
-connection.query(`SELECT id FROM department`, (err, res) => {
+/*
+connection.query(`SELECT * FROM employee`, (err, res) => {
     if (err) throw err;
     // Log all results of the SELECT statement
-    console.log(res);
-    const map1 = res.map(x => x.id);
+    //console.log(res);
+    const map1 = res.map(x => { return {id: x.id, first_name: x.first_name, last_name: x.last_name} });
     console.log(map1);
     console.log('\n');
 });
+*/
